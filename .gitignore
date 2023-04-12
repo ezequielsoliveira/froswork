@@ -1,0 +1,6 @@
+mariadb/data/*
+!mariadb/data/.gitkeep
+mariadb/log/*
+!mariadb/log/.gitkeep
+nginx/log/*
+!nginx/log/.gitkeep

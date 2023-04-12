@@ -1,0 +1,60 @@
+services:
+    nginx:
+        working_dir: /var/www
+        build:
+           context: ./nginx
+           dockerfile: Dockerfile
+        image: nginx:latest
+        container_name: nginx
+        ports:
+            - ${NGINX_PORT_HTTP}:80
+            - ${NGINX_PORT_HTTPS}:443
+        links:
+            - php
+        volumes:
+            - ${NGINX_CONF_DIR}:/etc/nginx/conf.d
+            - ${NGINX_LOG_DIR}:/var/log/nginx
+            - ${APPLICATION_PATH}:/var/www
+        depends_on:
+            - php
+
+    php:
+        working_dir: /var/www
+        build:
+            context: ./php
+            dockerfile: Dockerfile
+        image: php:8.1-fpm
+        container_name: php
+        expose:
+            - ${PHP_PORT}
+        environment:
+            MARIADB_HOST: ${MARIADB_HOST}
+            MARIADB_PORT: ${MARIADB_PORT}
+            MARIADB_USER: ${MARIADB_USER}
+            MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+            MARIADB_DATABASE: ${MARIADB_DATABASE}
+            MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+        links:
+            - mariadb
+        volumes:
+            - ${APPLICATION_PATH}:/var/www
+        depends_on:
+            - mariadb
+
+    mariadb:
+        container_name: mariadb
+        build:
+            context: ./mariadb
+            dockerfile: Dockerfile
+        image: mariadb:latest
+        expose:
+            - ${MARIADB_PORT}
+        environment:
+            MARIADB_HOST: ${MARIADB_HOST}
+            MARIADB_PORT: ${MARIADB_PORT}
+            MARIADB_USER: ${MARIADB_USER}
+            MARIADB_PASSWORD: ${MARIADB_PASSWORD}
+            MARIADB_DATABASE: ${MARIADB_DATABASE}
+            MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+        volumes:
+            - ./mariadb/data:/var/lib/mysql
